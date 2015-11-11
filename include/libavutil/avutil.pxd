@@ -207,7 +207,7 @@ cdef extern from "Python.h" nogil:
     void PyErr_Display(object, object, object)
 
 
-cdef extern from "libavutil/display.h" nogil:
+cdef extern from "libavutil/displayx.h" nogil:
     cdef double av_display_rotation_get(int32_t *matrix)
     cdef void av_display_rotation_set(int32_t *matrix, double angle)
 
