@@ -1,4 +1,4 @@
-from libc.stdint cimport uint8_t, uint16_t, uint32_t, uint64_t, int64_t
+from libc.stdint cimport uint8_t, uint16_t, uint32_t, uint64_t, int64_t, int32_t
 
 
 cdef extern from "libavcodec/avcodec.pyav.h" nogil:
@@ -182,7 +182,26 @@ cdef extern from "libavcodec/avcodec.pyav.h" nogil:
     cdef struct AVPicture:
         uint8_t **data
         int *linesize
-    
+
+    cdef enum AVFrameSideDataType:
+        AV_FRAME_DATA_PANSCAN
+        AV_FRAME_DATA_A53_CC
+        AV_FRAME_DATA_STEREO3D
+        AV_FRAME_DATA_MATRIXENCODING
+        AV_FRAME_DATA_DOWNMIX_INFO
+        AV_FRAME_DATA_REPLAYGAIN
+        AV_FRAME_DATA_DISPLAYMATRIX
+        AV_FRAME_DATA_AFD
+        AV_FRAME_DATA_MOTION_VECTORS
+        AV_FRAME_DATA_SKIP_SAMPLES
+        AV_FRAME_DATA_AUDIO_SERVICE_TYPE
+
+    # See: http://ffmpeg.org/doxygen/trunk/structAVFrameSideData.html
+    # This is a strict superset of AVPicture.
+    cdef struct AVFrameSideData:
+        AVFrameSideDataType type
+        uint8_t *data
+
     # See: http://ffmpeg.org/doxygen/trunk/structAVFrame.html
     # This is a strict superset of AVPicture.
     cdef struct AVFrame:
@@ -207,6 +226,8 @@ cdef extern from "libavcodec/avcodec.pyav.h" nogil:
         
         uint8_t **base
         void *opaque
+        int nb_side_data
+        AVFrameSideData **side_data
         
     cdef AVFrame* avcodec_alloc_frame()
     
@@ -230,7 +251,31 @@ cdef extern from "libavcodec/avcodec.pyav.h" nogil:
         int width,
         int height
     )
-    
+
+    cdef enum AVPacketSideDataType:
+        AV_PKT_DATA_PALETTE
+        AV_PKT_DATA_NEW_EXTRADATA
+        AV_PKT_DATA_PARAM_CHANGE
+        AV_PKT_DATA_H263_MB_INFO
+        AV_PKT_DATA_REPLAYGAIN
+        AV_PKT_DATA_DISPLAYMATRIX
+        AV_PKT_DATA_STEREO3D
+        AV_PKT_DATA_AUDIO_SERVICE_TYPE
+        AV_PKT_DATA_QUALITY_STATS
+        AV_PKT_DATA_SKIP_SAMPLES = 70
+        AV_PKT_DATA_JP_DUALMONO
+        AV_PKT_DATA_STRINGS_METADATA
+        AV_PKT_DATA_SUBTITLE_POSITION
+        AV_PKT_DATA_MATROSKA_BLOCKADDITIONAL
+        AV_PKT_DATA_WEBVTT_IDENTIFIER
+        AV_PKT_DATA_WEBVTT_SETTINGS
+        AV_PKT_DATA_METADATA_UPDATE
+
+    cdef struct AVPacketSideData:
+        uint8_t *data
+        int size
+        AVPacketSideDataType type
+
     cdef struct AVPacket:
 
         int64_t pts
@@ -244,6 +289,9 @@ cdef extern from "libavcodec/avcodec.pyav.h" nogil:
         int duration
         
         int64_t pos
+
+        AVPacketSideData *side_data
+        int side_data_elems
 
         void (*destruct)(AVPacket*)
     
@@ -344,7 +392,7 @@ cdef extern from "libavcodec/avcodec.pyav.h" nogil:
     
     cdef int64_t av_frame_get_best_effort_timestamp(AVFrame *frame)
     cdef void avcodec_flush_buffers(AVCodecContext *ctx)
-    
+
      # TODO: avcodec_default_get_buffer is deprecated for avcodec_default_get_buffer2 in newer versions of FFmpeg
     cdef int avcodec_default_get_buffer(AVCodecContext *ctx, AVFrame *frame)
     cdef void avcodec_default_release_buffer(AVCodecContext *ctx, AVFrame *frame)

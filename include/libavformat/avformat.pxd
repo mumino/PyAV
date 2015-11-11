@@ -52,8 +52,10 @@ cdef extern from "libavformat/avformat.pyav.h" nogil:
         int64_t duration
         int64_t nb_frames
         int64_t cur_dts
+        int nb_side_data
         
         AVDictionary *metadata
+        AVPacketSideData *side_data
         
         AVRational avg_frame_rate
         AVRational sample_aspect_ratio

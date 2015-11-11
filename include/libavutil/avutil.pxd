@@ -1,4 +1,4 @@
-from libc.stdint cimport int64_t, uint8_t, uint64_t
+from libc.stdint cimport int64_t, uint8_t, uint64_t, int32_t
 
 
 cdef extern from "libavutil/mathematics.h" nogil:
@@ -205,6 +205,11 @@ cdef extern from "Python.h" nogil:
     void PyErr_PrintEx(int set_sys_last_vars)
     int Py_IsInitialized()
     void PyErr_Display(object, object, object)
+
+
+cdef extern from "libavutil/display.h" nogil:
+    cdef double av_display_rotation_get(int32_t *matrix)
+    cdef void av_display_rotation_set(int32_t *matrix, double angle)
 
 
 cdef extern from "libavutil/opt.h" nogil:

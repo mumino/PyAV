@@ -1,3 +1,4 @@
+from libc.stdint cimport int64_t, int32_t
 
 cdef class Packet(object):
     
@@ -30,6 +31,17 @@ cdef class Packet(object):
         return self.struct.size
     cdef void*  _buffer_ptr(self):
         return self.struct.data
+
+    property rotation:
+        def __get__(self):
+            cdef lib.AVPacketSideData *sd
+            sd = self.struct.side_data
+            for i in range(self.struct.side_data_elems):
+                if sd[i].type == lib.AV_PKT_DATA_DISPLAYMATRIX:
+                    side_data = sd[i].data
+                    data = <const int32_t*> side_data
+                    return lib.av_display_rotation_get(data)
+            return 0
 
     def decode(self, count=0):
         """Decode the data in this packet into a list of Frames."""

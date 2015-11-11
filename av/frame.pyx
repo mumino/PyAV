@@ -3,7 +3,7 @@ from libc.limits cimport INT_MAX
 from cpython cimport Py_INCREF, PyTuple_New, PyTuple_SET_ITEM
 
 from av.plane cimport Plane
-
+from libc.stdint cimport int32_t, int64_t
 
 cdef class Frame(object):
 
@@ -43,6 +43,15 @@ cdef class Frame(object):
                 self.ptr.pts = lib.AV_NOPTS_VALUE
             else:
                 self.ptr.pts = value
+
+    property rotation:
+        def __get__(self):
+            cdef lib.AVFrameSideData **sd
+            sd = self.ptr.side_data
+            for i in range(self.ptr.nb_side_data):
+                 if sd[i].type == lib.AV_FRAME_DATA_DISPLAYMATRIX:
+                     return lib.av_display_rotation_get(<int32_t*>(sd[i].data))
+            return 0
 
     property time:
     

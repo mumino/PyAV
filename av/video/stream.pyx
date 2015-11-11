@@ -1,4 +1,4 @@
-from libc.stdint cimport int64_t
+from libc.stdint cimport int64_t, int32_t
 
 from av.container.core cimport Container
 from av.frame cimport Frame
@@ -82,7 +82,16 @@ cdef class VideoStream(Stream):
         frame.reformatter = self.reformatter
 
         return frame
-    
+
+    property rotation:
+        def __get__(self):
+            cdef lib.AVPacketSideData * sd = self._stream.side_data
+            for i in range(self._stream.nb_side_data):
+                if sd[i].type == lib.AV_PKT_DATA_DISPLAYMATRIX:
+                    return lib.av_display_rotation_get(<int32_t*>(sd[i].data))
+
+            return 0
+
     cpdef encode(self, VideoFrame frame=None):
         """Encodes a frame of video, returns a packet if one is ready.
         The output packet does not necessarily contain data for the most recent frame, 
